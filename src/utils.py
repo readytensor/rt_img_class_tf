@@ -7,7 +7,7 @@ import threading
 from typing import Any, Dict, List, Tuple, Union
 import numpy as np
 import pandas as pd
-import torch as T
+import tensorflow as tf
 
 
 def read_json_as_dict(input_path: str) -> Dict:
@@ -122,11 +122,6 @@ def set_seeds(seed_value: int) -> None:
         os.environ["PYTHONHASHSEED"] = str(seed_value)
         random.seed(seed_value)
         np.random.seed(seed_value)
-        T.manual_seed(seed_value)
-        T.cuda.manual_seed(seed_value)
-        T.cuda.manual_seed_all(seed_value)  # For multi-GPU setups
-        T.backends.cudnn.deterministic = True
-        T.backends.cudnn.benchmark = False
     else:
         raise ValueError(f"Invalid seed value: {seed_value}. Cannot set seeds.")
 
@@ -259,11 +254,11 @@ def get_peak_memory_usage():
     """
     Returns the peak memory usage by current cuda device (in MB) if available
     """
-    if not T.cuda.is_available():
+    if not tf.config.list_physical_devices("GPU"):
         return None
 
-    current_device = T.cuda.current_device()
-    peak_memory = T.cuda.max_memory_allocated(current_device)
+    current_device = "GPU:0"
+    peak_memory = tf.config.experimental.get_memory_info(current_device)["peak"]
     return peak_memory / (1024 * 1024)
 
 
@@ -279,10 +274,6 @@ class ResourceTracker(object):
 
     def __enter__(self):
         self.start_time = time.time()
-        if T.cuda.is_available():
-            T.cuda.reset_peak_memory_stats()  # Reset CUDA memory stats
-            T.cuda.empty_cache()  # Clear CUDA cache
-
         self.monitor.start()
         return self
 
