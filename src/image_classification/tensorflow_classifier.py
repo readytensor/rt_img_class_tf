@@ -8,6 +8,13 @@ from keras import layers, models, optimizers
 from keras.callbacks import EarlyStopping
 from keras.models import load_model
 from logger import get_logger
+from keras.optimizers.schedules import (
+    ExponentialDecay,
+    LearningRateSchedule,
+    PolynomialDecay,
+    PiecewiseConstantDecay,
+    CosineDecay,
+)
 
 warnings.filterwarnings("ignore")
 
@@ -31,6 +38,21 @@ def get_optimizer(optimizer: str):
             f"Supported: {supported_optimizers}"
         )
     return supported_optimizers[optimizer]
+
+
+def get_lr_scheduler(scheduler: str) -> LearningRateSchedule:
+
+    supported_schedulers = {
+        "exponential": ExponentialDecay,
+        "polynomial": PolynomialDecay,
+        "cosine": CosineDecay,
+        "piecewise_constant": PiecewiseConstantDecay,
+    }
+    if scheduler not in supported_schedulers.keys():
+        raise ValueError(
+            f"{scheduler} is not a supported scheduler. Supported: {supported_schedulers}"
+        )
+    return supported_schedulers[scheduler]
 
 
 class ImageClassifier:
@@ -58,7 +80,13 @@ class ImageClassifier:
         self.lr_scheduler_kwargs = lr_scheduler_kwargs
         self.kwargs = kwargs
 
-        self.optimizer = get_optimizer(self.optimizer_str)(learning_rate=self.lr)
+        if self.lr_scheduler_str is not None:
+            scheduler = get_lr_scheduler(self.lr_scheduler_str)(
+                **self.lr_scheduler_kwargs
+            )
+            self.optimizer = get_optimizer(self.optimizer_str)(learning_rate=scheduler)
+        else:
+            self.optimizer = get_optimizer(self.optimizer_str)(learning_rate=self.lr)
 
         self.model = self.build_model()
 
