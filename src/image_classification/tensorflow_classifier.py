@@ -17,6 +17,7 @@ IS_GPU_AVAI = (
     else "GPU not available"
 )
 logger.info(IS_GPU_AVAI)
+print(tf.config.list_physical_devices("GPU"))
 
 
 def get_optimizer(optimizer: str):
