@@ -1,17 +1,10 @@
+# use an tensorflow-gpu base image
 FROM tensorflow/tensorflow:2.15.0-gpu as builder
-
-# Avoid prompts from apt
-ENV DEBIAN_FRONTEND=noninteractive
-
 # Install OS dependencies
 RUN apt-get -y update && apt-get install -y --no-install-recommends \
     ca-certificates \
     dos2unix \
     && rm -rf /var/lib/apt/lists/*
-
-RUN python --version
-RUN python3 --version
-RUN pip --version
 # copy requirements file and and install
 COPY ./requirements.txt /opt/
 RUN pip3 install --no-cache-dir -r /opt/requirements.txt
@@ -29,13 +22,6 @@ WORKDIR /opt/src
 ENV PYTHONUNBUFFERED=TRUE
 ENV PYTHONDONTWRITEBYTECODE=TRUE
 ENV PATH="/opt/src:${PATH}"
-ENV TORCH_HOME="/opt"
-ENV MPLCONFIGDIR="/opt"
-
-RUN chown -R 1000:1000 /opt
-
-RUN chmod -R 777 /opt
-
 # set non-root user
 USER 1000
 # set entrypoint
