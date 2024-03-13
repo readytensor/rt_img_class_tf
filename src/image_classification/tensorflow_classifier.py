@@ -6,6 +6,17 @@ from keras.applications.resnet50 import ResNet50
 from keras import layers, models, optimizers
 from keras.callbacks import EarlyStopping
 from keras.models import load_model
+from logger import get_logger
+
+logger = get_logger(__name__)
+
+
+IS_GPU_AVAI = (
+    "GPU available (YES)"
+    if tf.config.list_physical_devices("GPU")
+    else "GPU not available"
+)
+logger.info(IS_GPU_AVAI)
 
 
 def get_optimizer(optimizer: str):
