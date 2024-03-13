@@ -1,12 +1,15 @@
 import os
 import keras
 import joblib
+import warnings
 import tensorflow as tf
 from keras.applications.resnet50 import ResNet50
 from keras import layers, models, optimizers
 from keras.callbacks import EarlyStopping
 from keras.models import load_model
 from logger import get_logger
+
+warnings.filterwarnings("ignore")
 
 logger = get_logger(__name__)
 

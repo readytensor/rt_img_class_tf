@@ -50,7 +50,7 @@ class TensorFlowDataLoaderFactory(AbstractDataLoaderFactory):
                 for fname in os.listdir(class_dir)
                 if not fname.startswith(".")
             ]
-            class_labels = [class_index] * len(class_file_paths)
+            class_labels = [class_name] * len(class_file_paths)
 
             file_paths.extend(class_file_paths)
             labels.extend(class_labels)
