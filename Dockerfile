@@ -1,5 +1,4 @@
-# Use an NVIDIA CUDA base image
-FROM nvidia/cuda:12.3.1-runtime-ubuntu20.04 as builder
+FROM tensorflow/tensorflow:2.15.0-gpu as builder
 
 # Avoid prompts from apt
 ENV DEBIAN_FRONTEND=noninteractive
