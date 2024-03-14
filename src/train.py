@@ -2,11 +2,11 @@ import os
 
 from config import paths
 from logger import get_logger, log_error
-from image_classification.classifier import (
+from prediction.predictor_model import (
     train_predictor_model,
     save_predictor_model,
 )
-from data_loader.tensorflow_data_loader import TensorFlowDataLoaderFactory
+from data_loader.data_loader import get_data_loader
 from utils import (
     read_json_as_dict,
     set_seeds,
@@ -71,7 +71,9 @@ def run_training(
 
             # get data loaders
             logger.info("Creating data loaders...")
-            data_loader_factory = TensorFlowDataLoaderFactory(**preprocessing_config)
+            data_loader_factory = get_data_loader(model_config["model_name"])(
+                **preprocessing_config
+            )
             train_data_loader, valid_data_loader = (
                 data_loader_factory.create_train_and_valid_data_loaders(
                     train_dir_path=train_dir_path,
@@ -80,8 +82,9 @@ def run_training(
             )
 
             # # use default hyperparameters to train model
-            logger.info("Training model...")
+            logger.info(f"Training model ({model_config['model_name']})...")
             model = train_predictor_model(
+                model_name=model_config["model_name"],
                 train_data=train_data_loader,
                 valid_data=valid_data_loader,
                 num_classes=data_loader_factory.num_classes,

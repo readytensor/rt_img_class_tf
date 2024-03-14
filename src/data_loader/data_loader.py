@@ -30,9 +30,6 @@ class TensorFlowDataLoaderFactory(AbstractDataLoaderFactory):
         self.random_state = random_state
 
     def _preprocess_function(self, x):
-        # Define preprocessing function, if needed
-        # This is where you would normalize images if not using `rescale` in
-        # `ImageDataGenerator`
         x = (x - self.mean) / self.std
         return x
 
@@ -43,7 +40,7 @@ class TensorFlowDataLoaderFactory(AbstractDataLoaderFactory):
         labels = []
 
         # Generate file paths and labels
-        for class_index, class_name in enumerate(class_names):
+        for class_name in class_names:
             class_dir = os.path.join(dataset_path, class_name)
             class_file_paths = [
                 os.path.join(class_dir, fname)
@@ -189,3 +186,65 @@ class TensorFlowDataLoaderFactory(AbstractDataLoaderFactory):
         Load the data loader factory from a file.
         """
         return joblib.load(file_path)
+
+
+def get_data_loader(model_name: str) -> TensorFlowDataLoaderFactory:
+    ordinary = {
+        "resnet50",
+        "resnet101",
+        "resnet152",
+    }
+    inception = {"inceptionV3"}
+    supported = ordinary | inception
+    if model_name in ordinary:
+        return OrdinaryDataLoader
+    if model_name in inception:
+        return InceptionV3DataLoader
+
+    raise ValueError(f"Invalid model name. supported model names: {supported}")
+
+
+class OrdinaryDataLoader(TensorFlowDataLoaderFactory):
+    mean: List[float] = [0.485, 0.456, 0.406]
+    std: List[float] = [0.229, 0.224, 0.225]
+    image_size: Tuple[int, int] = (224, 224)
+
+    def __init__(
+        self,
+        batch_size: int = 64,
+        validation_size: float = 0.0,
+        shuffle_train=True,
+        random_state: int = 42,
+    ):
+        super().__init__(
+            batch_size=batch_size,
+            mean=self.mean,
+            std=self.std,
+            image_size=self.image_size,
+            validation_size=validation_size,
+            shuffle_train=shuffle_train,
+            random_state=random_state,
+        )
+
+
+class InceptionV3DataLoader(TensorFlowDataLoaderFactory):
+    mean: List[float] = [0.485, 0.456, 0.406]
+    std: List[float] = [0.229, 0.224, 0.225]
+    image_size: Tuple[int, int] = (299, 299)
+
+    def __init__(
+        self,
+        batch_size: int = 64,
+        validation_size: float = 0.0,
+        shuffle_train=True,
+        random_state: int = 42,
+    ):
+        super().__init__(
+            batch_size=batch_size,
+            mean=self.mean,
+            std=self.std,
+            image_size=self.image_size,
+            validation_size=validation_size,
+            shuffle_train=shuffle_train,
+            random_state=random_state,
+        )

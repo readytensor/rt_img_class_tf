@@ -3,8 +3,8 @@ import pandas as pd
 
 from config import paths
 from logger import get_logger, log_error
-from image_classification.classifier import load_predictor_model, predict_with_model
-from data_loader.tensorflow_data_loader import TensorFlowDataLoaderFactory
+from prediction.predictor_model import load_predictor_model, predict_with_model
+from data_loader.data_loader import TensorFlowDataLoaderFactory
 from utils import save_dataframe_as_csv, ResourceTracker
 
 logger = get_logger(task_name="predict")

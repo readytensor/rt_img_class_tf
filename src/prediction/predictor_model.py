@@ -2,6 +2,8 @@ import os
 import keras
 import joblib
 import warnings
+import numpy as np
+from typing import Tuple
 import tensorflow as tf
 from keras.applications.resnet50 import ResNet50
 from keras import layers, models, optimizers
@@ -58,6 +60,7 @@ def get_lr_scheduler(scheduler: str) -> LearningRateSchedule:
 class ImageClassifier:
     def __init__(
         self,
+        model_name: str,
         num_classes: int,
         lr: float = 0.01,
         optimizer: str = "adam",
@@ -69,6 +72,7 @@ class ImageClassifier:
         lr_scheduler_kwargs: dict = None,
         **kwargs,
     ):
+        self.model_name = model_name
         self.lr = lr
         self.optimizer_str = optimizer
         self.max_epochs = max_epochs
@@ -158,6 +162,7 @@ class ImageClassifier:
           and state are to be saved.
         """
         model_params = {
+            "model_name": self.model_name,
             "lr": self.lr,
             "optimizer": self.optimizer_str,
             "lr_scheduler": self.lr_scheduler_str,
@@ -173,8 +178,8 @@ class ImageClassifier:
         joblib.dump(model_params, params_path)
         self.model.save(model_path)
 
-    @staticmethod
-    def load(predictor_dir_path: str) -> "ImageClassifier":
+    @classmethod
+    def load(cls, predictor_dir_path: str) -> "ImageClassifier":
         """
         Loads a pretrained model and its training configuration from a specified path.
 
@@ -188,6 +193,88 @@ class ImageClassifier:
         model_path = os.path.join(predictor_dir_path, "model_state.keras")
         params = joblib.load(params_path)
         model = load_model(model_path)
-        trainer = ImageClassifier(**params)
-        trainer.model = model
-        return trainer
+
+        classifier = ImageClassifier(**params)
+        classifier.model = model
+        return classifier
+
+
+def train_predictor_model(
+    model_name: str,
+    train_data: tf.data.Dataset,
+    hyperparameters: dict,
+    num_classes: int,
+    valid_data: tf.data.Dataset = None,
+) -> ImageClassifier:
+    """
+    Instantiate and train the classifier model.
+
+    Args:
+        train_data (DataLoader): The training data.
+        hyperparameters (dict): Hyperparameters for the model.
+        num_classes (int): Number of classes in the classificatiion problem.
+        valid_data (DataLoader): The validation data.
+
+    Returns:
+        'ImageClassifier': The ImageClassifier model
+    """
+
+    if model_name.startswith("resnet"):
+        from models.resnet import ResNet
+
+        constructor = ResNet
+
+    model = constructor(
+        model_name=model_name,
+        num_classes=num_classes,
+        **hyperparameters,
+    )
+    model.fit(
+        train_data=train_data,
+        valid_data=valid_data,
+    )
+    return model
+
+
+def predict_with_model(
+    model: ImageClassifier, test_data: tf.data.Dataset
+) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Make predictions.
+
+    Args:
+        model (ImageClassifier): The ImageClassifier model.
+        test_data (tf.data.Dataset): The test input data for model.
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray]: (predicted class labels, predicted class probabilites).
+    """
+    labels, probabilites = model.predict(test_data)
+    return labels, probabilites
+
+
+def save_predictor_model(model: ImageClassifier, predictor_dir_path: str) -> None:
+    """
+    Save the ImageClassifier model to disk.
+
+    Args:
+        model (ImageClassifier): The Classifier model to save.
+        predictor_dir_path (str): Dir path to which to save the model.
+    """
+    if not os.path.exists(predictor_dir_path):
+        os.makedirs(predictor_dir_path)
+    model.save(predictor_dir_path)
+
+
+def load_predictor_model(predictor_dir_path: str) -> ImageClassifier:
+    """
+    Load the ImageClassifier model from disk.
+
+    Args:
+        predictor_dir_path (str): Dir path where model is saved.
+
+    Returns:
+        ImageClassifier: A new instance of the loaded ImageClassifier model.
+    """
+
+    return ImageClassifier.load(predictor_dir_path)
