@@ -62,6 +62,7 @@ class ImageClassifier:
         self,
         model_name: str,
         num_classes: int,
+        model: keras.models.Model,
         lr: float = 0.01,
         optimizer: str = "adam",
         dense_layer_units: int = 512,
@@ -74,6 +75,7 @@ class ImageClassifier:
         **kwargs,
     ):
         self.model_name = model_name
+        self.model = model
         self.lr = lr
         self.optimizer_str = optimizer
         self.dense_layer_units = dense_layer_units
@@ -185,7 +187,7 @@ class ImageClassifier:
         params = joblib.load(params_path)
         model = load_model(model_path)
 
-        classifier = ImageClassifier(**params)
+        classifier = ImageClassifier(model=model, **params)
         classifier.model = model
         return classifier
 

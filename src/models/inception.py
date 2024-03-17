@@ -58,13 +58,14 @@ class Inception(ImageClassifier):
         lr_scheduler_kwargs: dict = None,
         **kwargs,
     ):
-        self.model = get_inception_model(
+        model = get_inception_model(
             model_name=model_name,
             num_classes=num_classes,
             dense_layer_units=dense_layer_units,
         )
         super().__init__(
             model_name=model_name,
+            model=model,
             num_classes=num_classes,
             lr=lr,
             optimizer=optimizer,
