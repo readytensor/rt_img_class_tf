@@ -5,8 +5,7 @@ import warnings
 import numpy as np
 from typing import Tuple
 import tensorflow as tf
-from keras.applications.resnet50 import ResNet50
-from keras import layers, models, optimizers
+from keras import optimizers
 from keras.callbacks import EarlyStopping
 from keras.models import load_model
 from logger import get_logger
@@ -106,7 +105,7 @@ class ImageClassifier:
         self, train_data: tf.data.Dataset, valid_data: tf.data.Dataset = None
     ) -> dict:
         callbacks = []
-        if self.early_stopping_patience > 0:
+        if self.early_stopping:
             early_stopper = EarlyStopping(
                 monitor="val_loss" if valid_data is not None else "loss",
                 patience=self.early_stopping_patience,

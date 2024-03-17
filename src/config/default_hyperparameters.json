@@ -3,9 +3,8 @@
   "optimizer": "adam",
   "max_epochs": 10,
   "early_stopping": true,
-  "early_stopping_patience": 10,
-  "early_stopping_delta": 0.002,
-  "dense_layer_units": 2048,
+  "early_stopping_patience": 2,
+  "early_stopping_delta": 0.04,
   "lr_scheduler": "cosine",
   "lr_scheduler_kwargs": {
     "warmup_steps": 2,
