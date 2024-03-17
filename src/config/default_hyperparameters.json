@@ -5,6 +5,7 @@
   "early_stopping": true,
   "early_stopping_patience": 10,
   "early_stopping_delta": 0.002,
+  "dense_layer_units": 2048,
   "lr_scheduler": "cosine",
   "lr_scheduler_kwargs": {
     "warmup_steps": 2,

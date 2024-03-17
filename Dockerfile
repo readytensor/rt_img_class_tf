@@ -22,6 +22,10 @@ WORKDIR /opt/src
 ENV PYTHONUNBUFFERED=TRUE
 ENV PYTHONDONTWRITEBYTECODE=TRUE
 ENV PATH="/opt/src:${PATH}"
+
+RUN chown -R 1000:1000 /opt
+RUN chmod -R 777 /opt
+
 # set non-root user
 USER 1000
 # set entrypoint

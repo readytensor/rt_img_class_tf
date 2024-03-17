@@ -30,6 +30,7 @@ class TensorFlowDataLoaderFactory(AbstractDataLoaderFactory):
         self.random_state = random_state
 
     def _preprocess_function(self, x):
+        x = tf.image.resize(x, list(self.image_size))
         x = (x - self.mean) / self.std
         return x
 

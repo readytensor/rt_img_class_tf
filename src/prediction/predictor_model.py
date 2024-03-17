@@ -64,6 +64,7 @@ class ImageClassifier:
         num_classes: int,
         lr: float = 0.01,
         optimizer: str = "adam",
+        dense_layer_units: int = 512,
         max_epochs: int = 10,
         early_stopping: bool = False,
         early_stopping_patience: int = 10,
@@ -75,6 +76,7 @@ class ImageClassifier:
         self.model_name = model_name
         self.lr = lr
         self.optimizer_str = optimizer
+        self.dense_layer_units = dense_layer_units
         self.max_epochs = max_epochs
         self.num_classes = num_classes
         self.early_stopping = early_stopping
@@ -92,22 +94,11 @@ class ImageClassifier:
         else:
             self.optimizer = get_optimizer(self.optimizer_str)(learning_rate=self.lr)
 
-        self.model = self.build_model()
-
         self.model.compile(
             optimizer=self.optimizer,
             loss="sparse_categorical_crossentropy",
             metrics=["accuracy"],
         )
-
-    def build_model(self) -> keras.models.Model:
-        base_model = ResNet50(
-            weights="imagenet", include_top=False, input_shape=(224, 224, 3)
-        )
-        x = layers.GlobalAveragePooling2D()(base_model.output)
-        x = layers.Dense(256, activation="relu")(x)
-        output = layers.Dense(self.num_classes, activation="softmax")(x)
-        return models.Model(inputs=base_model.input, outputs=output)
 
     def fit(
         self, train_data: tf.data.Dataset, valid_data: tf.data.Dataset = None
@@ -223,6 +214,10 @@ def train_predictor_model(
         from models.resnet import ResNet
 
         constructor = ResNet
+    elif model_name.startswith("inception"):
+        from models.inception import Inception
+
+        constructor = Inception
 
     model = constructor(
         model_name=model_name,
